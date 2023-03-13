@@ -1,43 +1,55 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.validator.UserValidator;
 
 import javax.validation.Valid;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
+@RequestMapping("/users")
 @Slf4j
+@Data
 public class UserController {
 
-    private final Map<Long, User> userStorage = new HashMap();
+    private final Map<Long, User> userStorage = new HashMap<>();
     private Long counter = 1L;
 
-    @PostMapping("/users")
-    public User addUser(@Valid @RequestBody User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
+    @PostMapping
+    public User addUser(@Valid @RequestBody User user) throws ValidationException {
+        UserValidator.validate(user);
+        if (userStorage.values().stream().noneMatch(u -> u.getLogin().equals(user.getLogin()))) {
+            user.setId(counter++);
+            userStorage.put(user.getId(), user);
+            log.info("Пользователь '{}' успешно добавлен", user.getLogin());
+            return user;
+        } else {
+            log.error("Пользователь '{}' не добавлен", user.getLogin());
+            throw new RuntimeException("Ошибка добавления пользователя");
         }
-        user.setId(counter++);
-        userStorage.put(user.getId(), user);
-        return user;
     }
 
-    @PutMapping("/users")
+    @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         if (userStorage.containsKey(user.getId())) {
             userStorage.put(user.getId(), user);
             return user;
         } else {
-            throw new  ValidationException("Не тот код");
+            log.error("Пользователь '{}' не найден", user.getLogin());
+            throw new RuntimeException("Ошибка обновления пользователя");
         }
     }
 
-    @GetMapping("/users")
-    public Set<User> findAll() {
+    @GetMapping
+    public List<User> findAll() {
         log.debug("Текущее количество пользователей: {}", userStorage.size());
-        return new HashSet<>(userStorage.values());
+        return new ArrayList<>(userStorage.values());
     }
 }

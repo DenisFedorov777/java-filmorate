@@ -15,19 +15,19 @@ public class UserValidator {
         }
         if (user.getLogin() == null || user.getLogin().equals("") || user.getLogin().contains(" ")) {
             log.info("Логин не может быть пустым");
-            throw new ValidationException("Ошибка добавления пользователя.");
+            throw new ValidationException("Логин не может быть пустым");
         }
         if (user.getEmail() == null || user.getEmail().equals("")) {
             log.info("Email не может быть пустым.");
-            throw new ValidationException("Ошибка добавления пользователя.");
+            throw new ValidationException("Email не может быть пустым.");
         }
         if (!user.getEmail().contains("@")) {
             log.info("Email должен содержать символ @.");
-            throw new ValidationException("Ошибка добавления пользователя.");
+            throw new ValidationException("Email должен содержать символ @.");
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.info("Некорректно указан возраст.");
-            throw new ValidationException("Ошибка добавления пользователя.");
+            throw new ValidationException("Некорректно указан возраст.");
         }
     }
 }

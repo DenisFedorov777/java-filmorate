@@ -16,7 +16,6 @@ public class Film {
     @Positive
     private Long id;
     @NotBlank
-    @NotNull
     private String name;
     @Size(min = 1, max = 200)
     private String description;

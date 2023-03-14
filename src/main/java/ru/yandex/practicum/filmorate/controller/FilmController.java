@@ -28,12 +28,9 @@ public class FilmController {
         if (filmStorage.values().stream().noneMatch(u -> u.getName().equals(film.getName()))) {
             film.setId(counter++);
             filmStorage.put(film.getId(), film);
-            log.error("Фильм '{}' добавлен", film.getName());
-            return film;
-        } else {
-            log.error("Фильм '{}' не добавлен.", film.getName());
-            throw new RuntimeException("Ошибка добавления фильма");
+            log.info("Фильм '{}' добавлен", film.getName());
         }
+        return film;
     }
 
     @PutMapping
@@ -42,9 +39,9 @@ public class FilmController {
             filmStorage.put(film.getId(), film);
             log.info("Фильм '{}' обновлен", film.getName());
             return film;
-        } else {
+        }else {
             log.error("Фильм '{}' не найден.", film.getName());
-            throw new RuntimeException("В хранилище нет такого фильма.");
+            throw new ValidationException("Ошибка обновления данных фильма.");
         }
     }
 

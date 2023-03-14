@@ -29,21 +29,19 @@ public class UserController {
             user.setId(counter++);
             userStorage.put(user.getId(), user);
             log.info("Пользователь '{}' успешно добавлен", user.getLogin());
-            return user;
-        } else {
-            log.error("Пользователь '{}' не добавлен", user.getLogin());
-            throw new RuntimeException("Ошибка добавления пользователя");
         }
+        return user;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         if (userStorage.containsKey(user.getId())) {
             userStorage.put(user.getId(), user);
+            log.info("Данные пользователя '{}' успешно изменены.", user.getLogin());
             return user;
         } else {
-            log.error("Пользователь '{}' не найден", user.getLogin());
-            throw new RuntimeException("Ошибка обновления пользователя");
+            log.error("Данные пользователя '{}' не изменены.", user.getName());
+            throw new ValidationException("Ошибка изменения данных пользователя.");
         }
     }
 

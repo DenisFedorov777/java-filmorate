@@ -56,8 +56,6 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User Friend not found by id"));
         firstUser.addFriend(friendId);
         secondUser.addFriend(userId);
-        userStorage.updateUser(firstUser);
-        userStorage.updateUser(secondUser);
     }
 
     public void deleteFriend(Long userId, Long friendId) {

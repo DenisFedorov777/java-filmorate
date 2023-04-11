@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.model.constraints.exceptions.InvalidFilmException;
 import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,14 @@ public class RestExceptionHandler {
         log.warn("The requested resource was not found: {} {} {}",
                 request.getMethod(), request.getRequestURI(), request.getQueryString());
         return createErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(InvalidFilmException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleFilmReliseException(InvalidFilmException ex, HttpServletRequest request) {
+        log.warn("Unable to check movie release date: {} {} {}",
+                request.getMethod(), request.getRequestURI(), request.getQueryString());
+        return createErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)

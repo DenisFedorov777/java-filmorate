@@ -1,22 +1,27 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 @Service
 public class FilmService {
 
     private final FilmStorage filmStorage;
-    private final UserService userService;
+
+    private final UserStorage userStorage;
+
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+    }
 
     public Film findFilmById(final Long id) {
         return filmStorage.getFilm(id)
@@ -46,15 +51,17 @@ public class FilmService {
     public void addLike(final Long filmId, final Long userId) {
         Film film = filmStorage.getFilm(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм не найден"));
-        User user = userService.findUserById(userId);
+
+        User user = userStorage.findUserById(userId).orElseThrow(() -> new NotFoundException(String
+                .format("Пользователь с id %s не найден", userId)));
         film.addLike(user.getId());
-        filmStorage.updateFilm(film);
     }
 
     public void deleteLike(final Long filmId, final Long userId) {
         Film film = filmStorage.getFilm(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм не найден"));
-        User user = userService.findUserById(userId);
+        User user = userStorage.findUserById(userId).orElseThrow(() -> new NotFoundException(String
+                .format("Пользователь с id %s не найден", userId)));
         film.deleteLike(user.getId());
         filmStorage.updateFilm(film);
     }

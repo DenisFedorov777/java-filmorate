@@ -12,8 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Getter
-@RequiredArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode
 @Builder
 @UserNullNameConstrain

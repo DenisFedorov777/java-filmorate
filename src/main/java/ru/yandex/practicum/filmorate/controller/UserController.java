@@ -19,44 +19,46 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(user));
     }
 
     @PutMapping
     public ResponseEntity<User> update(@Valid @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(user));
+        return ResponseEntity.ok(userService.update(user));
     }
 
     @GetMapping
     public ResponseEntity<Collection<User>> getAll() {
-        return ResponseEntity.ok(userService.findAllUsers());
+        return ResponseEntity.ok(userService.getAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(userService.findUserById(id));
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> appendFriend(@PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
+    public ResponseEntity<Void> addFriend(
+            @PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
         userService.addFriend(id, friendId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/{id}/friends")
     public ResponseEntity<Collection<User>> getAllFriends(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(userService.findUserFriends(id));
+        return ResponseEntity.ok(userService.getFriendsByUserId(id));
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> deleteFriend(@PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
+    public ResponseEntity<Void> deleteFriend(
+            @PathVariable("id") Long id, @PathVariable("friendId") Long friendId) {
         userService.deleteFriend(id, friendId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public ResponseEntity<Collection<User>> getCommonFriends(@PathVariable("id") Long id,
-                                                             @PathVariable("otherId") Long otherFriendId) {
+    public ResponseEntity<Collection<User>> getCommonFriends(
+            @PathVariable("id") Long id, @PathVariable("otherId") Long otherFriendId) {
         return ResponseEntity.ok(userService.findCommonFriends(id, otherFriendId));
     }
 }

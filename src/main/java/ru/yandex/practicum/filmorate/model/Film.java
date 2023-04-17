@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.yandex.practicum.filmorate.model.constraints.FilmReleaseDateConstrain;
 
@@ -18,24 +19,30 @@ import java.util.Set;
 @Builder
 public class Film {
 
-    private final Set<Long> likes = new HashSet<>();
+    @EqualsAndHashCode.Exclude
+    @JsonIgnore
+    @Setter
+    @Builder.Default
+    private Long likes = 0L;
     @Setter
     private Long id;
     @NotBlank
     private String name;
+
     @Size(min = 1, max = 200)
     private String description;
+
     @NotNull
     @FilmReleaseDateConstrain
     private LocalDate releaseDate;
     @Positive
     private Long duration;
-
-    public void addLike(final Long userId) {
-        likes.add(userId);
-    }
-
-    public void deleteLike(final Long userId) {
-        likes.remove(userId);
-    }
+    @EqualsAndHashCode.Exclude
+    @Setter
+    @Builder.Default
+    private Mpa mpa = new Mpa();
+    @EqualsAndHashCode.Exclude
+    @Setter
+    @Builder.Default
+    private Set<Genre> genres = new HashSet<>();
 }

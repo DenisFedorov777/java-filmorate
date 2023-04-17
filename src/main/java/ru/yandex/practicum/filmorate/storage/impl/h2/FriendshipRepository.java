@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.impl.h2;
 
-import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipDao;
 import ru.yandex.practicum.filmorate.storage.impl.h2.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.storage.impl.h2.sql.Constants;
+
+import java.util.List;
 
 @Repository
 public class FriendshipRepository implements FriendshipDao {

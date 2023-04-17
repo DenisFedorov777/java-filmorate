@@ -10,34 +10,32 @@ import ru.yandex.practicum.filmorate.storage.UserDao;
 @Service
 public class LikeService {
 
-  private final LikeDao likeDao;
-  private final FilmDao filmDao;
-  private final UserDao userDao;
+    private final LikeDao likeDao;
+    private final FilmDao filmDao;
+    private final UserDao userDao;
 
-  public LikeService(
-      LikeDao likeDao,
-      @Qualifier("filmRepository") FilmDao filmDao,
-      @Qualifier("userRepository") UserDao userDao) {
-    this.likeDao = likeDao;
-    this.filmDao = filmDao;
-    this.userDao = userDao;
-  }
+    public LikeService(
+            LikeDao likeDao,
+            @Qualifier("filmRepository") FilmDao filmDao,
+            @Qualifier("userRepository") UserDao userDao) {
+        this.likeDao = likeDao;
+        this.filmDao = filmDao;
+        this.userDao = userDao;
+    }
 
-  public void create(Long filmId, Long userId) {
-    filmDao.findById(filmId).orElseThrow(() -> new NotFoundException("Нет такого фильма"));
-    userDao.findById(userId).orElseThrow(() -> new NotFoundException("Нет такого пользователя"));
+    public void create(Long filmId, Long userId) {
+        filmDao.findById(filmId).orElseThrow(() -> new NotFoundException("Нет такого фильма"));
+        userDao.findById(userId).orElseThrow(() -> new NotFoundException("Нет такого пользователя"));
+        likeDao.create(filmId, userId);
+    }
 
-    // TODO пока ловим исключение на глобальном уровне. на текущем этапе не понятно.
-    likeDao.create(filmId, userId);
-  }
+    public void delete(Long filmId, Long userId) {
+        filmDao.findById(filmId).orElseThrow(() -> new NotFoundException("Нет такого фильма"));
+        userDao.findById(userId).orElseThrow(() -> new NotFoundException("Нет такого пользователя"));
+        likeDao.delete(filmId, userId);
+    }
 
-  public void delete(Long filmId, Long userId) {
-    filmDao.findById(filmId).orElseThrow(() -> new NotFoundException("Нет такого фильма"));
-    userDao.findById(userId).orElseThrow(() -> new NotFoundException("Нет такого пользователя"));
-    likeDao.delete(filmId, userId);
-  }
-
-  public Long selectCountLikeByFilmId(Long filmId) {
-    return likeDao.selectCountLikeByFilmId(filmId);
-  }
+    public Long selectCountLikeByFilmId(Long filmId) {
+        return likeDao.selectCountLikeByFilmId(filmId);
+    }
 }

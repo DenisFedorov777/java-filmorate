@@ -1,82 +1,121 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDao;
+import ru.yandex.practicum.filmorate.storage.FilmGenreDao;
+import ru.yandex.practicum.filmorate.storage.GenreDao;
+import ru.yandex.practicum.filmorate.storage.MpaDao;
 
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
 
-    private final FilmStorage filmStorage;
+    private final FilmDao filmDao;
+    private final LikeService likeService;
+    private final MpaDao mpaDao;
+    private final GenreDao genreDao;
+    private final FilmGenreDao filmGenreDao;
 
-    private final UserStorage userStorage;
-
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
-
-    public Film findFilmById(final Long id) {
-        return filmStorage.getFilm(id)
-                .orElseThrow(() -> new NotFoundException("Фильм не найден по id"));
+    public FilmService(
+            @Qualifier("filmRepository") FilmDao filmDao,
+            LikeService likeService,
+            MpaDao mpaDao,
+            GenreDao genreDao,
+            FilmGenreDao filmGenreDao) {
+        this.filmDao = filmDao;
+        this.likeService = likeService;
+        this.mpaDao = mpaDao;
+        this.genreDao = genreDao;
+        this.filmGenreDao = filmGenreDao;
     }
 
     public Film addFilm(final Film film) {
-        return filmStorage.addFilm(film);
+        final Film addedFilm = filmDao.create(film);
+
+        if (film.getMpa().getId() != null) {
+            setMpaInCurrentFilm(film.getId(), addedFilm);
+        }
+
+        if (!film.getGenres().isEmpty()) {
+            final Set<Genre> genres = film.getGenres();
+
+            filmGenreDao.deleteAllGenresByFilmId(film.getId());
+
+            genres.forEach((genre) -> filmGenreDao.updateFilmGenre(film.getId(), genre.getId()));
+            filmGenreDao
+                    .findByFilmId(film.getId())
+                    .ifPresent(genreList -> addedFilm.setGenres(new HashSet<>(genreList)));
+        }
+        return addedFilm;
     }
 
     public Film updateFilm(final Film film) {
-        filmStorage.getFilm(film.getId())
+        filmDao
+                .findById(film.getId())
                 .orElseThrow(() -> new NotFoundException("Фильм не найден по id"));
-        return filmStorage.updateFilm(film);
+
+        final Film updateFilm = filmDao.update(film);
+
+        if (film.getMpa().getId() != null) {
+            setMpaInCurrentFilm(film.getId(), updateFilm);
+        }
+
+        if (!film.getGenres().isEmpty()) {
+            final Set<Genre> genres = film.getGenres();
+
+            filmGenreDao.deleteAllGenresByFilmId(film.getId());
+
+            genres.forEach((genre) -> filmGenreDao.updateFilmGenre(film.getId(), genre.getId()));
+            filmGenreDao
+                    .findByFilmId(film.getId())
+                    .ifPresent(genreList -> updateFilm.setGenres(new HashSet<>(genreList)));
+        } else {
+            filmGenreDao.deleteAllGenresByFilmId(film.getId());
+        }
+
+        return updateFilm;
     }
 
-    public void deleteFilm(final Long id) {
-        filmStorage.getFilm(id)
-                .orElseThrow(() -> new NotFoundException("Фильм не найден по id"));
-        filmStorage.deleteFilm(id);
+    private void setMpaInCurrentFilm(Long filmId, Film updateFilm) {
+        mpaDao.findByFilmId(filmId).ifPresent(updateFilm::setMpa);
     }
 
     public Collection<Film> findAllFilms() {
-        return filmStorage.getAllFilms();
+        final Collection<Film> films = filmDao.findAll();
+        films.forEach(this::extractFilmProperties);
+        return films;
     }
 
-    public void addLike(final Long filmId, final Long userId) {
-        Film film = filmStorage.getFilm(filmId)
-                .orElseThrow(() -> new NotFoundException("Фильм не найден"));
+    public Film findFilmById(final Long id) {
+        final Film film =
+                filmDao.findById(id).orElseThrow(() -> new NotFoundException("Фильм не найден по id"));
 
-        User user = userStorage.findUserById(userId).orElseThrow(() -> new NotFoundException(String
-                .format("Пользователь с id %s не найден", userId)));
-        film.addLike(user.getId());
-    }
-
-    public void deleteLike(final Long filmId, final Long userId) {
-        Film film = filmStorage.getFilm(filmId)
-                .orElseThrow(() -> new NotFoundException("Фильм не найден"));
-        User user = userStorage.findUserById(userId).orElseThrow(() -> new NotFoundException(String
-                .format("Пользователь с id %s не найден", userId)));
-        film.deleteLike(user.getId());
-        filmStorage.updateFilm(film);
+        extractFilmProperties(film);
+        return film;
     }
 
     public Collection<Film> findPopularFilms(final int count) {
-        final Collection<Film> allFilms = filmStorage.getAllFilms();
-        final Comparator<Film> filmComparator = new Comparator<>() {
-            @Override
-            public int compare(Film o1, Film o2) {
-                return o2.getLikes().size() - o1.getLikes().size();
-            }
-        };
-        return allFilms.stream()
-                .sorted(filmComparator)
-                .limit(count)
-                .collect(Collectors.toList());
+        final List<Film> collect =
+                findAllFilms().stream()
+                        .sorted(Comparator.comparingLong(Film::getLikes).reversed())
+                        .limit(count)
+                        .collect(Collectors.toList());
+        return collect;
+    }
+
+    private void extractFilmProperties(Film film) {
+        film.setLikes(likeService.selectCountLikeByFilmId(film.getId()));
+
+        filmGenreDao
+                .findByFilmId(film.getId())
+                .ifPresent(genresList -> film.setGenres(new HashSet<>(genresList)));
+
+        setMpaInCurrentFilm(film.getId(), film);
     }
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -8,8 +9,9 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Mpa {
 
-    private Long id;
-    private String name;
+    Long id;
+    String name;
 }

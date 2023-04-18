@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.model.constraints.UserNullNameConstrain;
 
 import javax.validation.constraints.Email;
@@ -17,20 +18,21 @@ import java.util.Set;
 @EqualsAndHashCode
 @Builder
 @UserNullNameConstrain
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
 
-    private final Set<Long> friends = new HashSet<>();
+    final Set<Long> friends = new HashSet<>();
     @Setter
-    private Long id;
+    Long id;
     @NotBlank
     @Email
-    private String email;
+    String email;
     @NotBlank
-    private String login;
-    private String name;
+    String login;
+    String name;
     @NotNull
     @PastOrPresent
-    private LocalDate birthday;
+    LocalDate birthday;
 
     public void addFriend(final Long id) {
         friends.add(id);

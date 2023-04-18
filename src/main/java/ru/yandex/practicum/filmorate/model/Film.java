@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.model.constraints.FilmReleaseDateConstrain;
 
 import javax.validation.constraints.NotBlank;
@@ -17,32 +18,33 @@ import java.util.Set;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
 
     @EqualsAndHashCode.Exclude
     @JsonIgnore
     @Setter
     @Builder.Default
-    private Long likes = 0L;
+    Long likes = 0L;
     @Setter
-    private Long id;
+    Long id;
     @NotBlank
-    private String name;
+    String name;
 
     @Size(min = 1, max = 200)
-    private String description;
+    String description;
 
     @NotNull
     @FilmReleaseDateConstrain
-    private LocalDate releaseDate;
+    LocalDate releaseDate;
     @Positive
-    private Long duration;
+    Long duration;
     @EqualsAndHashCode.Exclude
     @Setter
     @Builder.Default
-    private Mpa mpa = new Mpa();
+    Mpa mpa = new Mpa();
     @EqualsAndHashCode.Exclude
     @Setter
     @Builder.Default
-    private Set<Genre> genres = new HashSet<>();
+    Set<Genre> genres = new HashSet<>();
 }

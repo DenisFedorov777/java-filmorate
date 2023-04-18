@@ -1,14 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Genre {
 
-    private Long id;
-    private String name;
+    Long id;
+    String name;
 }
